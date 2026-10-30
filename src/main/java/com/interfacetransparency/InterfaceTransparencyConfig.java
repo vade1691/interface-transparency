@@ -1,4 +1,4 @@
-package com.menutabtransparency;
+package com.interfacetransparency;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
@@ -6,8 +6,8 @@ import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
 import net.runelite.client.config.Range;
 
-@ConfigGroup("menutabtransparency")
-public interface MenuTabTransparencyConfig extends Config
+@ConfigGroup("interfacetransparency")
+public interface InterfaceTransparencyConfig extends Config
 {
 	// ---------------------------------------------------------------------
 	// Resizable modern

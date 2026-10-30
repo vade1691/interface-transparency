@@ -1,4 +1,4 @@
-# Menu Tab Transparency
+# Interface Transparency
 
 A RuneLite plugin that lets you adjust the transparency of the side panel menu tabs and the chat tabs.
 

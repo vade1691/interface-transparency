@@ -1,4 +1,4 @@
-package com.menutabtransparency;
+package com.interfacetransparency;
 
 import com.google.inject.Provides;
 import java.util.HashMap;
@@ -17,11 +17,11 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
 @PluginDescriptor(
-	name = "Menu Tab Transparency",
+	name = "Interface Transparency",
 	description = "Change the opacity of the side panel tabs and the chat tabs",
 	tags = {"opacity", "transparent", "tabs", "stones", "chat", "interface"}
 )
-public class MenuTabTransparencyPlugin extends Plugin
+public class InterfaceTransparencyPlugin extends Plugin
 {
 	// ---- Resizable modern (ToplevelPreEoc, group 164) ----
 	// There is no stone/icon 10 in this layout's widget tree.
@@ -126,14 +126,14 @@ public class MenuTabTransparencyPlugin extends Plugin
 	private ClientThread clientThread;
 
 	@Inject
-	private MenuTabTransparencyConfig config;
+	private InterfaceTransparencyConfig config;
 
 	private final Map<Long, State> states = new HashMap<>();
 
 	@Provides
-	MenuTabTransparencyConfig provideConfig(ConfigManager configManager)
+	InterfaceTransparencyConfig provideConfig(ConfigManager configManager)
 	{
-		return configManager.getConfig(MenuTabTransparencyConfig.class);
+		return configManager.getConfig(InterfaceTransparencyConfig.class);
 	}
 
 	@Override
