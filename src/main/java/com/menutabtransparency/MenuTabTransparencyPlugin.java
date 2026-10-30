@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.events.ClientTick;
+import net.runelite.api.gameval.InterfaceID.Chatbox;
 import net.runelite.api.gameval.InterfaceID.ToplevelOsrsStretch;
 import net.runelite.api.gameval.InterfaceID.ToplevelPreEoc;
 import net.runelite.api.widgets.Widget;
@@ -17,62 +18,96 @@ import net.runelite.client.plugins.PluginDescriptor;
 
 @PluginDescriptor(
 	name = "Menu Tab Transparency",
-	description = "Change the opacity of the side panel tabs, icons and background",
-	tags = {"opacity", "transparent", "tabs", "stones", "interface"}
+	description = "Change the opacity of the side panel tabs and the chat tabs",
+	tags = {"opacity", "transparent", "tabs", "stones", "chat", "interface"}
 )
 public class MenuTabTransparencyPlugin extends Plugin
 {
 	// ---- Resizable modern (ToplevelPreEoc, group 164) ----
 	// There is no stone/icon 10 in this layout's widget tree.
-	private static final int[] MODERN = {
+	private static final int[] MODERN_STONES = {
 		ToplevelPreEoc.STONE0, ToplevelPreEoc.STONE1, ToplevelPreEoc.STONE2,
 		ToplevelPreEoc.STONE3, ToplevelPreEoc.STONE4, ToplevelPreEoc.STONE5,
 		ToplevelPreEoc.STONE6, ToplevelPreEoc.STONE7, ToplevelPreEoc.STONE8,
 		ToplevelPreEoc.STONE9, ToplevelPreEoc.STONE11, ToplevelPreEoc.STONE12,
-		ToplevelPreEoc.STONE13,
+		ToplevelPreEoc.STONE13
+	};
 
+	private static final int[] MODERN_ICONS = {
 		ToplevelPreEoc.ICON0, ToplevelPreEoc.ICON1, ToplevelPreEoc.ICON2,
 		ToplevelPreEoc.ICON3, ToplevelPreEoc.ICON4, ToplevelPreEoc.ICON5,
 		ToplevelPreEoc.ICON6, ToplevelPreEoc.ICON7, ToplevelPreEoc.ICON8,
 		ToplevelPreEoc.ICON9, ToplevelPreEoc.ICON11, ToplevelPreEoc.ICON12,
-		ToplevelPreEoc.ICON13,
+		ToplevelPreEoc.ICON13
+	};
 
+	private static final int[] MODERN_BACKGROUND = {
 		ToplevelPreEoc.SIDE_STATIC_BACKGROUND,
 		ToplevelPreEoc.SIDE_MOVABLE_BACKGROUND
 	};
 
 	// ---- Resizable classic (ToplevelOsrsStretch, group 161) ----
 	// This layout has all 14 stones/icons (0-13).
-	// SIDE_BACKGROUND and the SIDE_MENU_GRAPHIC* widgets are the panel background/graphics.
 	// TODO: SIDE_MENU_GRAPHIC0 and 4 (and any others) may exist; add them if parts of the panel don't fade.
-	private static final int[] CLASSIC = {
+	private static final int[] CLASSIC_STONES = {
 		ToplevelOsrsStretch.STONE0, ToplevelOsrsStretch.STONE1, ToplevelOsrsStretch.STONE2,
 		ToplevelOsrsStretch.STONE3, ToplevelOsrsStretch.STONE4, ToplevelOsrsStretch.STONE5,
 		ToplevelOsrsStretch.STONE6, ToplevelOsrsStretch.STONE7, ToplevelOsrsStretch.STONE8,
 		ToplevelOsrsStretch.STONE9, ToplevelOsrsStretch.STONE10, ToplevelOsrsStretch.STONE11,
-		ToplevelOsrsStretch.STONE12, ToplevelOsrsStretch.STONE13,
+		ToplevelOsrsStretch.STONE12, ToplevelOsrsStretch.STONE13
+	};
 
+	private static final int[] CLASSIC_ICONS = {
 		ToplevelOsrsStretch.ICON0, ToplevelOsrsStretch.ICON1, ToplevelOsrsStretch.ICON2,
 		ToplevelOsrsStretch.ICON3, ToplevelOsrsStretch.ICON4, ToplevelOsrsStretch.ICON5,
 		ToplevelOsrsStretch.ICON6, ToplevelOsrsStretch.ICON7, ToplevelOsrsStretch.ICON8,
 		ToplevelOsrsStretch.ICON9, ToplevelOsrsStretch.ICON10, ToplevelOsrsStretch.ICON11,
-		ToplevelOsrsStretch.ICON12, ToplevelOsrsStretch.ICON13,
+		ToplevelOsrsStretch.ICON12, ToplevelOsrsStretch.ICON13
+	};
 
-		// Panel background and graphics (161.38 - 161.41, 161.57)
-		ToplevelOsrsStretch.SIDE_BACKGROUND,
+	// The side pillars (161.39 and 161.40)
+	private static final int[] CLASSIC_PILLARS = {
 		ToplevelOsrsStretch.SIDE_MENU_GRAPHIC1,
-		ToplevelOsrsStretch.SIDE_MENU_GRAPHIC2,
+		ToplevelOsrsStretch.SIDE_MENU_GRAPHIC2
+	};
+
+	// Side graphics controlled by both the stones and the icons sliders (161.41 and 161.57).
+	// A widget can only have one opacity, so the more transparent of the two settings is used.
+	private static final int[] CLASSIC_SHARED = {
 		ToplevelOsrsStretch.SIDE_MENU_GRAPHIC3,
 		ToplevelOsrsStretch.SIDE_MENU_GRAPHIC5
 	};
 
-	// Don't let the tabs become impossible to find
-	private static final int MIN_PERCENT = 10;
+	// The panel background only (161.38)
+	private static final int[] CLASSIC_BACKGROUND = {
+		ToplevelOsrsStretch.SIDE_BACKGROUND
+	};
+
+	// ---- Chat tabs (Chatbox, group 162), shared by every layout ----
+	// These widgets have child widgets (button backgrounds, etc.), so they are
+	// faded together with all of their children.
+	private static final int[] CHAT_BUTTONS = {
+		Chatbox.CHAT_ALL,
+		Chatbox.CHAT_GAME,
+		Chatbox.CHAT_PUBLIC,
+		Chatbox.CHAT_PRIVATE,
+		Chatbox.CHAT_FRIENDSCHAT,
+		Chatbox.CHAT_CLAN,
+		Chatbox.CHAT_TRADE,
+		Chatbox.REPORTABUSE
+	};
+
+	private static final int[] CHAT_BACKGROUND = {
+		Chatbox.CONTROLS_BACKGROUND
+	};
+
+	// 0 means fully transparent. Raise this if you want a minimum visibility.
+	private static final int MIN_PERCENT = 0;
 
 	/**
 	 * What we know about one widget we have changed.
-	 * original: the opacity the game itself gave it (e.g. via the "Transparent side panel"
-	 *           setting).
+	 * original: the opacity the game itself gave it (e.g. via the "Transparent side panel" or
+	 *           "Transparent chatbox" settings).
 	 * lastSet:  the last value this plugin wrote. If the widget's current opacity differs from
 	 *           it, the game changed it, and the current value becomes the new original.
 	 */
@@ -112,21 +147,64 @@ public class MenuTabTransparencyPlugin extends Plugin
 	{
 		// Only the active layout's widgets exist, so applying both is harmless:
 		// the other layout's lookups just return null.
-		apply(MODERN, config.modernOpacity());
-		apply(CLASSIC, config.classicOpacity());
+		boolean modern = config.modernGrouped();
+		apply(MODERN_STONES, modern ? config.modernOpacity() : config.modernStones(), false);
+		apply(MODERN_ICONS, modern ? config.modernOpacity() : config.modernIcons(), false);
+		apply(MODERN_BACKGROUND, modern ? config.modernOpacity() : config.modernBackground(), false);
+
+		boolean classic = config.classicGrouped();
+		apply(CLASSIC_STONES, classic ? config.classicOpacity() : config.classicStones(), false);
+		apply(CLASSIC_ICONS, classic ? config.classicOpacity() : config.classicIcons(), false);
+		apply(CLASSIC_SHARED, classic ? config.classicOpacity() : Math.min(config.classicStones(), config.classicIcons()), false);
+		apply(CLASSIC_PILLARS, classic ? config.classicOpacity() : config.classicPillars(), false);
+		apply(CLASSIC_BACKGROUND, classic ? config.classicOpacity() : config.classicBackground(), false);
+
+		boolean chat = config.chatGrouped();
+		apply(CHAT_BUTTONS, chat ? config.chatOpacity() : config.chatButtons(), true);
+		apply(CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBackground(), true);
 	}
 
-	private void apply(int[] ids, int percent)
+	private void apply(int[] ids, int percent, boolean includeChildren)
 	{
 		int clamped = Math.max(MIN_PERCENT, Math.min(100, percent));
 
 		for (int id : ids)
 		{
 			Widget w = client.getWidget(id);
-			if (w != null)
+			if (includeChildren)
+			{
+				applyTree(w, percent, clamped);
+			}
+			else if (w != null)
 			{
 				applyWidget(w, percent, clamped);
 			}
+		}
+	}
+
+	private void applyTree(Widget w, int percent, int clamped)
+	{
+		if (w == null)
+		{
+			return;
+		}
+
+		applyWidget(w, percent, clamped);
+		applyAll(w.getStaticChildren(), percent, clamped);
+		applyAll(w.getDynamicChildren(), percent, clamped);
+		applyAll(w.getNestedChildren(), percent, clamped);
+	}
+
+	private void applyAll(Widget[] widgets, int percent, int clamped)
+	{
+		if (widgets == null)
+		{
+			return;
+		}
+
+		for (Widget child : widgets)
+		{
+			applyTree(child, percent, clamped);
 		}
 	}
 
