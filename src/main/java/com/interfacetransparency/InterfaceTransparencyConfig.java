@@ -84,6 +84,19 @@ public interface InterfaceTransparencyConfig extends Config
 		return 100;
 	}
 
+	@Range(min = 0, max = 100)
+	@ConfigItem(
+		keyName = "modernBorder",
+		name = "Panel border (%)",
+		description = "Used when 'Use one slider for all' is off: opacity of the side panel border (100 = default)",
+		section = modernSection,
+		position = 5
+	)
+	default int modernBorder()
+	{
+		return 100;
+	}
+
 	// ---------------------------------------------------------------------
 	// Resizable classic
 	// ---------------------------------------------------------------------

@@ -151,6 +151,7 @@ public class InterfaceTransparencyPlugin extends Plugin
 		apply(MODERN_STONES, modern ? config.modernOpacity() : config.modernStones(), false);
 		apply(MODERN_ICONS, modern ? config.modernOpacity() : config.modernIcons(), false);
 		apply(MODERN_BACKGROUND, modern ? config.modernOpacity() : config.modernBackground(), false);
+		applyDynamicChildren(ToplevelPreEoc.SIDE_CONTAINER, modern ? config.modernOpacity() : config.modernBorder());
 
 		boolean classic = config.classicGrouped();
 		apply(CLASSIC_STONES, classic ? config.classicOpacity() : config.classicStones(), false);
@@ -178,6 +179,34 @@ public class InterfaceTransparencyPlugin extends Plugin
 			else if (w != null)
 			{
 				applyWidget(w, percent, clamped);
+			}
+		}
+	}
+
+	/**
+	 * Fades only the dynamic children of a container (for example the side panel border pieces),
+	 * leaving the container itself and its other contents alone.
+	 */
+	private void applyDynamicChildren(int id, int percent)
+	{
+		Widget container = client.getWidget(id);
+		if (container == null)
+		{
+			return;
+		}
+
+		Widget[] children = container.getDynamicChildren();
+		if (children == null)
+		{
+			return;
+		}
+
+		int clamped = Math.max(MIN_PERCENT, Math.min(100, percent));
+		for (Widget child : children)
+		{
+			if (child != null)
+			{
+				applyWidget(child, percent, clamped);
 			}
 		}
 	}

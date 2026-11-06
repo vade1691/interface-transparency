@@ -6,7 +6,7 @@ A RuneLite plugin that lets you adjust the transparency of the side panel menu t
 
 Each area has its own settings section, with a choice between one slider for everything or separate sliders for each element.
 
-- **Resizable modern:** tab stones, tab icons and the panel background.
+- **Resizable modern:** tab stones, tab icons, the panel background and the panel border.
 - **Resizable classic:** tab stones, tab icons, the side pillars and the panel background.
 - **Chat tabs:** the chat tab buttons and their background.
 
@@ -22,4 +22,5 @@ Sliders run from 0% (fully transparent) to 100% (the game's normal appearance).
 
 ## Notes
 
-This plugin only changes the opacity of existing interface widgets. It does not hide or add any information, and it does not affect gameplay.
+- This plugin only changes the opacity of existing interface widgets. It does not hide or add any information, and it does not affect gameplay.
+- The chat filter text is a text widget, and the game ignores opacity on those, so it does not fade with the chat tab buttons.
