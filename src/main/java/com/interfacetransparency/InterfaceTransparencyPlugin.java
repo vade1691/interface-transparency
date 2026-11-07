@@ -3,6 +3,7 @@ package com.interfacetransparency;
 import com.google.inject.Provides;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -122,6 +123,32 @@ public class InterfaceTransparencyPlugin extends Plugin
 		Orbs.ORB_CONTENTRECOM,
 		Orbs.XP_DROPS
 	};
+
+	// The boxes behind the orbs, including the dark "empty" disc each orb sits on.
+	// These follow the Orb boxes slider and are faded linearly, not curved.
+	private static final Set<Integer> ORB_BACKINGS = Set.of(
+		Orbs.HEALTH_BACKING,
+		Orbs.PRAYER_BACKING,
+		Orbs.RUNENERGY_BACKING,
+		Orbs.SPECENERGY_BACKING,
+		Orbs.CR_BACKING,
+		Orbs.WORLDMAP_BACKING,
+
+		Orbs.ORB_HEALTH_EMPTY,
+		Orbs.HEALTH_EMPTY_CONTENTS,
+		Orbs.ORB_PRAYER_EMPTY,
+		Orbs.ORB_PRAYER_EMPTY_GRAPHIC0,
+		Orbs.ORB_RUNENERGY_EMPTY,
+		Orbs.ORB_RUNENERGY_EMPTY_GRAPHIC0,
+		Orbs.ORB_SPECENERGY_EMPTY,
+		Orbs.ORB_SPECENERGY_EMPTY_GRAPHIC0
+	);
+
+	// The rest of each orb is several widgets stacked on top of each other, and each one is faded. Overlapping
+	// layers keep the combined result looking opaque until each is quite transparent, so the orbs
+	// slider is curved to compensate. Raise this if the orb icons still barely change at high values,
+	// lower it (1 = no curve) if they change too fast.
+	private static final int ORB_LAYERS = 2;
 
 	// The minimap surround in the resizable modern layout.
 	// Deliberately not included: ToplevelPreEoc.MINIMAP, which is the map itself.
@@ -256,10 +283,66 @@ public class InterfaceTransparencyPlugin extends Plugin
 		apply(CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBackground(), true);
 
 		boolean minimap = config.minimapGrouped();
-		apply(MINIMAP_ORBS, minimap ? config.minimapOpacity() : config.minimapOrbs(), true);
+		applyOrbs(
+			minimap ? config.minimapOpacity() : config.minimapOrbs(),
+			minimap ? config.minimapOpacity() : config.minimapOrbBoxes());
 		int surround = minimap ? config.minimapOpacity() : config.minimapSurround();
 		apply(MINIMAP_SURROUND, surround, false);
 		apply(MINIMAP_SURROUND_CLASSIC, surround, false);
+	}
+
+	/**
+	 * Converts the slider value into the per-layer opacity that gives the same overall look when
+	 * ORB_LAYERS layers are stacked. 100 stays 100 so the game's own appearance is untouched.
+	 */
+	private static int layered(int percent)
+	{
+		if (percent >= 100)
+		{
+			return 100;
+		}
+
+		double visible = Math.max(0, percent) / 100.0;
+		return (int) Math.round(100 * (1 - Math.pow(1 - visible, 1.0 / ORB_LAYERS)));
+	}
+
+	/**
+	 * Fades every orb and all of its children. The backing boxes use their own slider value as it
+	 * is; everything else uses the orbs slider with the layered curve.
+	 */
+	private void applyOrbs(int orbPercent, int boxPercent)
+	{
+		for (int id : MINIMAP_ORBS)
+		{
+			applyOrbTree(client.getWidget(id), orbPercent, boxPercent);
+		}
+	}
+
+	private void applyOrbTree(Widget w, int orbPercent, int boxPercent)
+	{
+		if (w == null)
+		{
+			return;
+		}
+
+		int p = ORB_BACKINGS.contains(w.getId()) ? boxPercent : layered(orbPercent);
+		applyWidget(w, p, Math.max(MIN_PERCENT, Math.min(100, p)));
+		applyOrbChildren(w.getStaticChildren(), orbPercent, boxPercent);
+		applyOrbChildren(w.getDynamicChildren(), orbPercent, boxPercent);
+		applyOrbChildren(w.getNestedChildren(), orbPercent, boxPercent);
+	}
+
+	private void applyOrbChildren(Widget[] widgets, int orbPercent, int boxPercent)
+	{
+		if (widgets == null)
+		{
+			return;
+		}
+
+		for (Widget child : widgets)
+		{
+			applyOrbTree(child, orbPercent, boxPercent);
+		}
 	}
 
 	private void apply(int[] ids, int percent, boolean includeChildren)

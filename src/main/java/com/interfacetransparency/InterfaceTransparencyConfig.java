@@ -289,7 +289,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "minimapOrbs",
 		name = "Orbs (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the health, prayer, run, special attack, store, world map, wiki, recommendations and XP drops orbs (100 = default)",
+		description = "Used when 'Use one slider for all' is off: opacity of the orbs themselves: icons, fills and indicators (100 = default)",
 		section = minimapSection,
 		position = 2
 	)
@@ -300,11 +300,24 @@ public interface InterfaceTransparencyConfig extends Config
 
 	@Range(min = 0, max = 100)
 	@ConfigItem(
+		keyName = "minimapOrbBoxes",
+		name = "Orb boxes (%)",
+		description = "Used when 'Use one slider for all' is off: opacity of the dark boxes behind the orbs and the dark disc each orb sits on (100 = default)",
+		section = minimapSection,
+		position = 3
+	)
+	default int minimapOrbBoxes()
+	{
+		return 100;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
 		keyName = "minimapSurround",
 		name = "Surround (%)",
 		description = "Used when 'Use one slider for all' is off: opacity of the minimap surround (100 = default)",
 		section = minimapSection,
-		position = 3
+		position = 4
 	)
 	default int minimapSurround()
 	{
