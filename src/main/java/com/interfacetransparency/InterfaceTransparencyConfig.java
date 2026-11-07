@@ -248,4 +248,77 @@ public interface InterfaceTransparencyConfig extends Config
 	{
 		return 100;
 	}
+
+	// ---------------------------------------------------------------------
+	// Minimap
+	// ---------------------------------------------------------------------
+
+	@ConfigSection(
+		name = "Minimap",
+		description = "Transparency of the minimap orbs and the minimap surround",
+		position = 3
+	)
+	String minimapSection = "minimapSection";
+
+	@ConfigItem(
+		keyName = "minimapGrouped",
+		name = "Use one slider for all",
+		description = "On: the 'All' slider controls everything in the minimap section. Off: the individual sliders below are used instead.",
+		section = minimapSection,
+		position = 0
+	)
+	default boolean minimapGrouped()
+	{
+		return true;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
+		keyName = "minimapOpacity",
+		name = "All minimap elements (%)",
+		description = "Used when 'Use one slider for all' is on: opacity of the orbs and the minimap surround (100 = default)",
+		section = minimapSection,
+		position = 1
+	)
+	default int minimapOpacity()
+	{
+		return 100;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
+		keyName = "minimapOrbs",
+		name = "Orbs (%)",
+		description = "Used when 'Use one slider for all' is off: opacity of the health, prayer, run, special attack, store, world map, wiki, recommendations and XP drops orbs (100 = default)",
+		section = minimapSection,
+		position = 2
+	)
+	default int minimapOrbs()
+	{
+		return 100;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
+		keyName = "minimapSurround",
+		name = "Surround (%)",
+		description = "Used when 'Use one slider for all' is off: opacity of the minimap surround (100 = default)",
+		section = minimapSection,
+		position = 3
+	)
+	default int minimapSurround()
+	{
+		return 100;
+	}
+
+	@ConfigItem(
+		keyName = "showUpdateMessage",
+		name = "Show update message",
+		description = "Show a message in the chat box once on the first login after the plugin updates",
+		position = 99
+	)
+	default boolean showUpdateMessage()
+	{
+		return true;
+	}
 }

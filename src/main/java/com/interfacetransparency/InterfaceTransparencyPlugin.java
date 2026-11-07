@@ -4,13 +4,20 @@ import com.google.inject.Provides;
 import java.util.HashMap;
 import java.util.Map;
 import javax.inject.Inject;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.GameState;
 import net.runelite.api.events.ClientTick;
+import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.gameval.InterfaceID.Chatbox;
+import net.runelite.api.gameval.InterfaceID.Orbs;
 import net.runelite.api.gameval.InterfaceID.ToplevelOsrsStretch;
 import net.runelite.api.gameval.InterfaceID.ToplevelPreEoc;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.chat.ChatColorType;
+import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -18,7 +25,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 
 @PluginDescriptor(
 	name = "Interface Transparency",
-	description = "Change the opacity of the side panel tabs and the chat tabs",
+	description = "Change the opacity of the side panel tabs, the chat tabs and the minimap orbs and surround",
 	tags = {"opacity", "transparent", "tabs", "stones", "chat", "interface"}
 )
 public class InterfaceTransparencyPlugin extends Plugin
@@ -101,6 +108,36 @@ public class InterfaceTransparencyPlugin extends Plugin
 		Chatbox.CONTROLS_BACKGROUND
 	};
 
+	// ---- Minimap ----
+	// The orbs (Orbs, group 160) are shared by every layout. They have child widgets
+	// (backing, icon, indicator and so on), so they are faded together with all of them.
+	private static final int[] MINIMAP_ORBS = {
+		Orbs.ORB_HEALTH,
+		Orbs.ORB_PRAYER,
+		Orbs.ORB_RUNENERGY,
+		Orbs.ORB_SPECENERGY,
+		Orbs.ORB_STORE,
+		Orbs.ORB_WORLDMAP,
+		Orbs.WIKI,
+		Orbs.ORB_CONTENTRECOM,
+		Orbs.XP_DROPS
+	};
+
+	// The minimap surround in the resizable modern layout.
+	// Deliberately not included: ToplevelPreEoc.MINIMAP, which is the map itself.
+	private static final int[] MINIMAP_SURROUND = {
+		ToplevelPreEoc.MAP_NOCLICK_0, ToplevelPreEoc.MAP_NOCLICK_1, ToplevelPreEoc.MAP_NOCLICK_2,
+		ToplevelPreEoc.MAP_NOCLICK_3, ToplevelPreEoc.MAP_NOCLICK_4, ToplevelPreEoc.MAP_NOCLICK_5,
+		ToplevelPreEoc.MAP_MINIMAP_GRAPHIC6,
+		ToplevelPreEoc.MAP_MINIMAP_GRAPHIC9
+	};
+
+	// The minimap surround in the resizable classic layout (161.32).
+	// TODO: the classic equivalents of MAP_NOCLICK_0-5 and MAP_MINIMAP_GRAPHIC6 are not added yet.
+	private static final int[] MINIMAP_SURROUND_CLASSIC = {
+		ToplevelOsrsStretch.MAP_MINIMAP_GRAPHIC9
+	};
+
 	// 0 means fully transparent. Raise this if you want a minimum visibility.
 	private static final int MIN_PERCENT = 0;
 
@@ -119,6 +156,15 @@ public class InterfaceTransparencyPlugin extends Plugin
 		boolean modified;
 	}
 
+	// ---- "What's new" message ----
+	// Shown once in the chat box on the first login after the plugin updates.
+	// When you release something players should hear about, bump VERSION and edit WHATS_NEW.
+	private static final String CONFIG_GROUP = "interfacetransparency";
+	private static final String VERSION_KEY = "lastSeenVersion";
+	private static final String VERSION = "2";
+	private static final String WHATS_NEW =
+		"Interface Transparency: new minimap orb and surround transparency. Open the plugin settings to try it.";
+
 	@Inject
 	private Client client;
 
@@ -126,9 +172,14 @@ public class InterfaceTransparencyPlugin extends Plugin
 	private ClientThread clientThread;
 
 	@Inject
+	private ConfigManager configManager;
+
+	@Inject
 	private InterfaceTransparencyConfig config;
 
 	private final Map<Long, State> states = new HashMap<>();
+
+	private boolean updateMessagePending;
 
 	@Provides
 	InterfaceTransparencyConfig provideConfig(ConfigManager configManager)
@@ -137,9 +188,49 @@ public class InterfaceTransparencyPlugin extends Plugin
 	}
 
 	@Override
+	protected void startUp()
+	{
+		// If the plugin is switched on while already logged in, greet straight away
+		updateMessagePending = client.getGameState() == GameState.LOGGED_IN && needsUpdateMessage();
+	}
+
+	@Override
 	protected void shutDown()
 	{
 		clientThread.invoke(this::restoreAll);
+	}
+
+	@Subscribe
+	public void onGameStateChanged(GameStateChanged event)
+	{
+		if (event.getGameState() == GameState.LOGGED_IN && needsUpdateMessage())
+		{
+			updateMessagePending = true;
+		}
+	}
+
+	@Subscribe
+	public void onGameTick(GameTick tick)
+	{
+		// Wait a tick after login so the chat box is ready
+		if (!updateMessagePending || client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+
+		updateMessagePending = false;
+		client.addChatMessage(
+			ChatMessageType.GAMEMESSAGE,
+			"",
+			new ChatMessageBuilder().append(ChatColorType.HIGHLIGHT).append(WHATS_NEW).build(),
+			null);
+		configManager.setConfiguration(CONFIG_GROUP, VERSION_KEY, VERSION);
+	}
+
+	private boolean needsUpdateMessage()
+	{
+		return config.showUpdateMessage()
+			&& !VERSION.equals(configManager.getConfiguration(CONFIG_GROUP, VERSION_KEY));
 	}
 
 	@Subscribe
@@ -163,6 +254,12 @@ public class InterfaceTransparencyPlugin extends Plugin
 		boolean chat = config.chatGrouped();
 		apply(CHAT_BUTTONS, chat ? config.chatOpacity() : config.chatButtons(), true);
 		apply(CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBackground(), true);
+
+		boolean minimap = config.minimapGrouped();
+		apply(MINIMAP_ORBS, minimap ? config.minimapOpacity() : config.minimapOrbs(), true);
+		int surround = minimap ? config.minimapOpacity() : config.minimapSurround();
+		apply(MINIMAP_SURROUND, surround, false);
+		apply(MINIMAP_SURROUND_CLASSIC, surround, false);
 	}
 
 	private void apply(int[] ids, int percent, boolean includeChildren)
