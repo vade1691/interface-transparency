@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.events.BeforeRender;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
@@ -279,11 +280,7 @@ public class InterfaceTransparencyPlugin extends Plugin
 		apply(CLASSIC_PILLARS, classic ? config.classicOpacity() : config.classicPillars(), false);
 		apply(CLASSIC_BACKGROUND, classic ? config.classicOpacity() : config.classicBackground(), false);
 
-		boolean chat = config.chatGrouped();
-		apply(CHAT_BUTTONS, chat ? config.chatOpacity() : config.chatButtons(), true);
-		apply(CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBackground(), true);
-		applyAbsolute(Chatbox.CONTROLS_BACKGROUND_GRAPHIC, chat ? config.chatOpacity() : config.chatBackground(),
-			config.chatKeepBackgroundOpaque());
+		applyChat();
 
 		boolean minimap = config.minimapGrouped();
 		applyOrbs(
@@ -292,6 +289,25 @@ public class InterfaceTransparencyPlugin extends Plugin
 		int surround = minimap ? config.minimapOpacity() : config.minimapSurround();
 		apply(MINIMAP_SURROUND, surround, false);
 		apply(MINIMAP_SURROUND_CLASSIC, surround, false);
+	}
+
+	/**
+	 * Runs just before each frame is drawn. The game can reset the chat widgets when the chat box
+	 * is opened or closed, so they are applied again here to avoid a one-frame flash.
+	 */
+	@Subscribe
+	public void onBeforeRender(BeforeRender event)
+	{
+		applyChat();
+	}
+
+	private void applyChat()
+	{
+		boolean chat = config.chatGrouped();
+		apply(CHAT_BUTTONS, chat ? config.chatOpacity() : config.chatButtons(), true);
+		apply(CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBackground(), true);
+		applyAbsolute(Chatbox.CONTROLS_BACKGROUND_GRAPHIC, chat ? config.chatOpacity() : config.chatBackground(),
+			config.chatKeepBackgroundOpaque());
 	}
 
 	/**
