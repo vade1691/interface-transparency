@@ -249,6 +249,19 @@ public interface InterfaceTransparencyConfig extends Config
 		return 100;
 	}
 
+	@ConfigItem(
+		keyName = "chatKeepBackgroundOpaque",
+		name = "Keep tab background opaque",
+		description = "At 100%, keep the background behind the chat tab buttons fully opaque even when the game's "
+			+ "'Transparent chatbox' setting is on. Lower values still fade it. Off = leave it as the game draws it.",
+		section = chatSection,
+		position = 4
+	)
+	default boolean chatKeepBackgroundOpaque()
+	{
+		return false;
+	}
+
 	// ---------------------------------------------------------------------
 	// Minimap
 	// ---------------------------------------------------------------------

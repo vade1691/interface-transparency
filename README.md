@@ -19,6 +19,7 @@ Sliders run from 0% (fully transparent) to 100% (the game's normal appearance).
 
 - For the best result in the resizable classic layout, turn on **Transparent side panel** in the game's Interfaces settings.
 - For the chat tabs, turn on **Transparent chatbox** in the same settings.
+  - If you want the background behind the chat tab buttons to stay solid with that setting on, turn on **Keep tab background opaque** in the Chat tabs section.
 - The plugin works alongside the game's own transparency settings. At 100% it changes nothing.
 
 ## Notes

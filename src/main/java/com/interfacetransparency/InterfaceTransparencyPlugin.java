@@ -105,6 +105,7 @@ public class InterfaceTransparencyPlugin extends Plugin
 		Chatbox.REPORTABUSE
 	};
 
+	// 162.2 and its children, except 162.3, which is handled on its own (see applyAbsolute)
 	private static final int[] CHAT_BACKGROUND = {
 		Chatbox.CONTROLS_BACKGROUND
 	};
@@ -281,6 +282,8 @@ public class InterfaceTransparencyPlugin extends Plugin
 		boolean chat = config.chatGrouped();
 		apply(CHAT_BUTTONS, chat ? config.chatOpacity() : config.chatButtons(), true);
 		apply(CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBackground(), true);
+		applyAbsolute(Chatbox.CONTROLS_BACKGROUND_GRAPHIC, chat ? config.chatOpacity() : config.chatBackground(),
+			config.chatKeepBackgroundOpaque());
 
 		boolean minimap = config.minimapGrouped();
 		applyOrbs(
@@ -398,6 +401,11 @@ public class InterfaceTransparencyPlugin extends Plugin
 			return;
 		}
 
+		if (w.getId() == Chatbox.CONTROLS_BACKGROUND_GRAPHIC)
+		{
+			return; // handled by applyAbsolute
+		}
+
 		applyWidget(w, percent, clamped);
 		applyAll(w.getStaticChildren(), percent, clamped);
 		applyAll(w.getDynamicChildren(), percent, clamped);
@@ -461,6 +469,60 @@ public class InterfaceTransparencyPlugin extends Plugin
 			s.lastSet = target;
 			s.modified = true;
 		}
+	}
+
+	/**
+	 * Sets a widget's opacity straight from the slider, ignoring the opacity the game gave it:
+	 * 0% = fully transparent (255), 100% = fully opaque (0). At 100% the plugin stops touching the
+	 * widget and puts the game's own value back, so by default nothing changes. With opaqueAt100 on,
+	 * 100% instead keeps the widget fully opaque, whatever the game's own transparency setting is.
+	 */
+	private void applyAbsolute(int id, int percent, boolean opaqueAt100)
+	{
+		Widget w = client.getWidget(id);
+		if (w == null)
+		{
+			return;
+		}
+
+		long key = ((long) w.getId() << 16) | (w.getIndex() + 1);
+		State s = states.get(key);
+
+		if (percent >= 100 && !opaqueAt100)
+		{
+			if (s != null)
+			{
+				if (s.modified && w.getOpacity() == s.lastSet)
+				{
+					w.setOpacity(s.original);
+				}
+				states.remove(key);
+			}
+			return;
+		}
+
+		if (s == null)
+		{
+			s = new State();
+			states.put(key, s);
+		}
+
+		s.widget = w;
+		int current = w.getOpacity();
+		if (!s.modified || current != s.lastSet)
+		{
+			s.original = current;
+		}
+
+		int clamped = Math.max(MIN_PERCENT, Math.min(100, percent));
+		int target = 255 - (255 * clamped / 100);
+		if (current != target)
+		{
+			w.setOpacity(target);
+		}
+
+		s.lastSet = target;
+		s.modified = true;
 	}
 
 	/**
