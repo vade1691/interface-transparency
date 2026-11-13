@@ -265,23 +265,22 @@ public class InterfaceTransparencyPlugin extends Plugin
 	@Subscribe
 	public void onClientTick(ClientTick tick)
 	{
-		// Only the active layout's widgets exist, so applying both is harmless:
-		// the other layout's lookups just return null.
-		boolean modern = config.modernGrouped();
-		apply(MODERN_STONES, modern ? config.modernOpacity() : config.modernStones(), false);
-		apply(MODERN_ICONS, modern ? config.modernOpacity() : config.modernIcons(), false);
-		apply(MODERN_BACKGROUND, modern ? config.modernOpacity() : config.modernBackground(), false);
-		applyDynamicChildren(ToplevelPreEoc.SIDE_CONTAINER, modern ? config.modernOpacity() : config.modernBorder());
+		applyAll();
+	}
 
-		boolean classic = config.classicGrouped();
-		apply(CLASSIC_STONES, classic ? config.classicOpacity() : config.classicStones(), false);
-		apply(CLASSIC_ICONS, classic ? config.classicOpacity() : config.classicIcons(), false);
-		apply(CLASSIC_SHARED, classic ? config.classicOpacity() : Math.min(config.classicStones(), config.classicIcons()), false);
-		apply(CLASSIC_PILLARS, classic ? config.classicOpacity() : config.classicPillars(), false);
-		apply(CLASSIC_BACKGROUND, classic ? config.classicOpacity() : config.classicBackground(), false);
-
+	/**
+	 * Applies every setting. Called on each client tick and again just before each frame is drawn
+	 * (see onBeforeRender).
+	 */
+	private void applyAll()
+	{
+		applySidePanel();
 		applyChat();
+		applyMinimap();
+	}
 
+	private void applyMinimap()
+	{
 		boolean minimap = config.minimapGrouped();
 		applyOrbs(
 			minimap ? config.minimapOpacity() : config.minimapOrbs(),
@@ -292,13 +291,34 @@ public class InterfaceTransparencyPlugin extends Plugin
 	}
 
 	/**
-	 * Runs just before each frame is drawn. The game can reset the chat widgets when the chat box
-	 * is opened or closed, so they are applied again here to avoid a one-frame flash.
+	 * Runs just before each frame is drawn. The game can reset the side panel, chat and minimap widgets (for
+	 * example when a tab is switched, an item moves or the chat box opens or closes), so they are
+	 * applied again here to avoid a flash back to the default look.
 	 */
 	@Subscribe
 	public void onBeforeRender(BeforeRender event)
 	{
-		applyChat();
+		applyAll();
+	}
+
+	private void applySidePanel()
+	{
+		// Only the active layout's widgets exist, so applying both is harmless:
+		// the other layout's lookups just return null.
+		boolean modern = config.modernGrouped();
+		// The stones slider covers both the stone background and the highlighted active tab
+		int modernStones = modern ? config.modernOpacity() : config.modernBackground();
+		apply(MODERN_STONES, modernStones, false);
+		apply(MODERN_ICONS, modern ? config.modernOpacity() : config.modernIcons(), false);
+		apply(MODERN_BACKGROUND, modernStones, false);
+		applyDynamicChildren(ToplevelPreEoc.SIDE_CONTAINER, modern ? config.modernOpacity() : config.modernBorder());
+
+		boolean classic = config.classicGrouped();
+		apply(CLASSIC_STONES, classic ? config.classicOpacity() : config.classicStones(), false);
+		apply(CLASSIC_ICONS, classic ? config.classicOpacity() : config.classicIcons(), false);
+		apply(CLASSIC_SHARED, classic ? config.classicOpacity() : Math.min(config.classicStones(), config.classicIcons()), false);
+		apply(CLASSIC_PILLARS, classic ? config.classicOpacity() : config.classicPillars(), false);
+		apply(CLASSIC_BACKGROUND, classic ? config.classicOpacity() : config.classicBackground(), false);
 	}
 
 	private void applyChat()
@@ -542,17 +562,45 @@ public class InterfaceTransparencyPlugin extends Plugin
 	}
 
 	/**
-	 * Puts back the game's own opacity for every widget this plugin changed.
+	 * Puts back the game's own opacity for every widget this plugin changed. The widget is looked
+	 * up again by its id, because the game (or another plugin) may have rebuilt it since we last
+	 * touched it, which would leave the widget we stored detached from what is on screen.
 	 */
 	private void restoreAll()
 	{
-		for (State s : states.values())
+		for (Map.Entry<Long, State> entry : states.entrySet())
 		{
-			if (s.modified && s.widget != null && s.widget.getOpacity() == s.lastSet)
+			State s = entry.getValue();
+			if (!s.modified)
 			{
-				s.widget.setOpacity(s.original);
+				continue;
+			}
+
+			restoreWidget(findWidget(entry.getKey()), s);
+			if (s.widget != null)
+			{
+				restoreWidget(s.widget, s);
 			}
 		}
 		states.clear();
+	}
+
+	private static void restoreWidget(Widget w, State s)
+	{
+		if (w != null && w.getOpacity() == s.lastSet)
+		{
+			w.setOpacity(s.original);
+		}
+	}
+
+	/**
+	 * Finds the widget a state key was made from (see applyWidget): the id is in the upper bits
+	 * and the index (+1) in the lower 16. Dynamic children share their parent's id.
+	 */
+	private Widget findWidget(long key)
+	{
+		Widget w = client.getWidget((int) (key >>> 16));
+		int index = (int) (key & 0xFFFF) - 1;
+		return w == null || index < 0 ? w : w.getChild(index);
 	}
 }

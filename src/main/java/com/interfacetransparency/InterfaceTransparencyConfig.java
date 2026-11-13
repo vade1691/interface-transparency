@@ -47,19 +47,6 @@ public interface InterfaceTransparencyConfig extends Config
 
 	@Range(min = 0, max = 100)
 	@ConfigItem(
-		keyName = "modernStones",
-		name = "Tab stones (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the dark stone behind each tab icon (100 = default)",
-		section = modernSection,
-		position = 2
-	)
-	default int modernStones()
-	{
-		return 100;
-	}
-
-	@Range(min = 0, max = 100)
-	@ConfigItem(
 		keyName = "modernIcons",
 		name = "Tab icons (%)",
 		description = "Used when 'Use one slider for all' is off: opacity of the icon on each tab (100 = default)",
@@ -74,10 +61,10 @@ public interface InterfaceTransparencyConfig extends Config
 	@Range(min = 0, max = 100)
 	@ConfigItem(
 		keyName = "modernBackground",
-		name = "Panel background (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the side panel background (100 = default)",
+		name = "Tab stones (%)",
+		description = "Used when 'Use one slider for all' is off: opacity of the stone background behind the tab icons, including the highlighted active tab (100 = default)",
 		section = modernSection,
-		position = 4
+		position = 2
 	)
 	default int modernBackground()
 	{
@@ -177,7 +164,8 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "classicBackground",
 		name = "Panel background (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the side panel background (100 = default)",
+		description = "Used when 'Use one slider for all' is off: opacity of the side panel background (100 = default). "
+			+ "Needs 'Transparent side panel' turned on in the game's Interfaces settings to show properly.",
 		section = classicSection,
 		position = 5
 	)
