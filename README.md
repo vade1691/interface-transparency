@@ -26,5 +26,4 @@ Sliders run from 0% (fully transparent) to 100% (the game's normal appearance).
 ## Notes
 
 - This plugin only changes the opacity of existing interface widgets. It does not hide or add any information, and it does not affect gameplay.
-- Text widgets, such as the chat filter text and the numbers on the orbs, are ignored by the game's opacity setting, so they do not fade with the elements around them.
-- The minimap surround is only partly supported in the resizable classic layout so far.
+- The chat filter text (the On/Off/Filter text under the chat tabs) is ignored by the game's opacity setting, so it does not fade with the chat tab buttons.

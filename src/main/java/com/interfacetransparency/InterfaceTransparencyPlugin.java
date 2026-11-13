@@ -157,7 +157,6 @@ public class InterfaceTransparencyPlugin extends Plugin
 	};
 
 	// The minimap surround in the resizable classic layout (161.32).
-	// TODO: the classic equivalents of MAP_NOCLICK_0-5 and MAP_MINIMAP_GRAPHIC6 are not added yet.
 	private static final int[] MINIMAP_SURROUND_CLASSIC = {
 		ToplevelOsrsStretch.MAP_MINIMAP_GRAPHIC9
 	};
