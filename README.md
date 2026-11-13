@@ -6,7 +6,7 @@ A RuneLite plugin that lets you adjust the transparency of the side panel menu t
 
 Each area has its own settings section, with a choice between one slider for everything or separate sliders for each element.
 
-- **Resizable modern:** tab stones, tab icons, the panel background and the panel border.
+- **Resizable modern:** tab stones (the stone background and the highlighted active tab), tab icons and the panel border.
 - **Resizable classic:** tab stones, tab icons, the side pillars and the panel background.
 - **Chat tabs:** the chat tab buttons and their background.
 - **Minimap:** the orbs (health, prayer, run energy, special attack, store, world map, wiki, recommendations and XP drops) and the minimap surround.
