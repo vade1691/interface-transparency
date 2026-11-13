@@ -73,11 +73,39 @@ public interface InterfaceTransparencyConfig extends Config
 
 	@Range(min = 0, max = 100)
 	@ConfigItem(
+		keyName = "modernPanelBackground",
+		name = "Panel background (%)",
+		description = "Used when 'Use one slider for all' is off: opacity of the side panel background. "
+			+ "0 = fully transparent, 100 = the game's own appearance. Works whether or not the game's "
+			+ "'Transparent side panel' setting is on.",
+		section = modernSection,
+		position = 4
+	)
+	default int modernPanelBackground()
+	{
+		return 100;
+	}
+
+	@ConfigItem(
+		keyName = "modernKeepPanelOpaque",
+		name = "Keep panel background opaque",
+		description = "At 100%, keep the side panel background fully opaque even when the game's "
+			+ "'Transparent side panel' setting is on. Lower values still fade it. Off = leave it as the game draws it.",
+		section = modernSection,
+		position = 5
+	)
+	default boolean modernKeepPanelOpaque()
+	{
+		return false;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
 		keyName = "modernBorder",
 		name = "Panel border (%)",
 		description = "Used when 'Use one slider for all' is off: opacity of the side panel border (100 = default)",
 		section = modernSection,
-		position = 5
+		position = 6
 	)
 	default int modernBorder()
 	{
@@ -164,14 +192,28 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "classicBackground",
 		name = "Panel background (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the side panel background (100 = default). "
-			+ "Needs 'Transparent side panel' turned on in the game's Interfaces settings to show properly.",
+		description = "Used when 'Use one slider for all' is off: opacity of the side panel background. "
+			+ "0 = fully transparent, 100 = the game's own appearance. Works whether or not the game's "
+			+ "'Transparent side panel' setting is on.",
 		section = classicSection,
 		position = 5
 	)
 	default int classicBackground()
 	{
 		return 100;
+	}
+
+	@ConfigItem(
+		keyName = "classicKeepPanelOpaque",
+		name = "Keep panel background opaque",
+		description = "At 100%, keep the side panel background fully opaque even when the game's "
+			+ "'Transparent side panel' setting is on. Lower values still fade it. Off = leave it as the game draws it.",
+		section = classicSection,
+		position = 6
+	)
+	default boolean classicKeepPanelOpaque()
+	{
+		return false;
 	}
 
 	// ---------------------------------------------------------------------

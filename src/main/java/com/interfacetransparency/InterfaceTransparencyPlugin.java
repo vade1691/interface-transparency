@@ -87,11 +87,6 @@ public class InterfaceTransparencyPlugin extends Plugin
 		ToplevelOsrsStretch.SIDE_MENU_GRAPHIC5
 	};
 
-	// The panel background only (161.38)
-	private static final int[] CLASSIC_BACKGROUND = {
-		ToplevelOsrsStretch.SIDE_BACKGROUND
-	};
-
 	// ---- Chat tabs (Chatbox, group 162), shared by every layout ----
 	// These widgets have child widgets (button backgrounds, etc.), so they are
 	// faded together with all of their children.
@@ -311,6 +306,8 @@ public class InterfaceTransparencyPlugin extends Plugin
 		apply(MODERN_STONES, modernStones, false);
 		apply(MODERN_ICONS, modern ? config.modernOpacity() : config.modernIcons(), false);
 		apply(MODERN_BACKGROUND, modernStones, false);
+		applyAbsolute(ToplevelPreEoc.SIDE_BACKGROUND, modern ? config.modernOpacity() : config.modernPanelBackground(),
+			config.modernKeepPanelOpaque());
 		applyDynamicChildren(ToplevelPreEoc.SIDE_CONTAINER, modern ? config.modernOpacity() : config.modernBorder());
 
 		boolean classic = config.classicGrouped();
@@ -318,7 +315,10 @@ public class InterfaceTransparencyPlugin extends Plugin
 		apply(CLASSIC_ICONS, classic ? config.classicOpacity() : config.classicIcons(), false);
 		apply(CLASSIC_SHARED, classic ? config.classicOpacity() : Math.min(config.classicStones(), config.classicIcons()), false);
 		apply(CLASSIC_PILLARS, classic ? config.classicOpacity() : config.classicPillars(), false);
-		apply(CLASSIC_BACKGROUND, classic ? config.classicOpacity() : config.classicBackground(), false);
+		// The panel backgrounds follow the slider directly (0% = transparent, 100% = the game's own
+		// look), so they can be controlled whatever the game's "Transparent side panel" setting is.
+		applyAbsolute(ToplevelOsrsStretch.SIDE_BACKGROUND, classic ? config.classicOpacity() : config.classicBackground(),
+			config.classicKeepPanelOpaque());
 	}
 
 	private void applyChat()
