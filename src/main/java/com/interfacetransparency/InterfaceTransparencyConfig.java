@@ -292,6 +292,34 @@ public interface InterfaceTransparencyConfig extends Config
 		return false;
 	}
 
+	@Range(min = 0, max = 100)
+	@ConfigItem(
+		keyName = "chatBoxBackground",
+		name = "Chat box background (%)",
+		description = "Used when 'Use one slider for all' is off: opacity of the background behind the chat messages. "
+			+ "0 = fully transparent, 100 = the game's own appearance. Works whether or not the game's "
+			+ "'Transparent chatbox' setting is on.",
+		section = chatSection,
+		position = 5
+	)
+	default int chatBoxBackground()
+	{
+		return 100;
+	}
+
+	@ConfigItem(
+		keyName = "chatKeepBoxOpaque",
+		name = "Keep chat box background opaque",
+		description = "At 100%, keep the background behind the chat messages fully opaque even when the game's "
+			+ "'Transparent chatbox' setting is on. Lower values still fade it. Off = leave it as the game draws it.",
+		section = chatSection,
+		position = 6
+	)
+	default boolean chatKeepBoxOpaque()
+	{
+		return false;
+	}
+
 	// ---------------------------------------------------------------------
 	// Minimap
 	// ---------------------------------------------------------------------

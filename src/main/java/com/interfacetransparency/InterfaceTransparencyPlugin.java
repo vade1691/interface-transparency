@@ -327,6 +327,9 @@ public class InterfaceTransparencyPlugin extends Plugin
 		apply(CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBackground(), true);
 		applyAbsolute(Chatbox.CONTROLS_BACKGROUND_GRAPHIC, chat ? config.chatOpacity() : config.chatBackground(),
 			config.chatKeepBackgroundOpaque());
+		// The chat box area (162.37), which is made of dynamic children
+		applyAbsoluteToChildren(Chatbox.CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBoxBackground(),
+			config.chatKeepBoxOpaque());
 	}
 
 	/**
@@ -514,7 +517,30 @@ public class InterfaceTransparencyPlugin extends Plugin
 	 */
 	private void applyAbsolute(int id, int percent, boolean opaqueAt100)
 	{
-		Widget w = client.getWidget(id);
+		applyAbsolute(client.getWidget(id), percent, opaqueAt100);
+	}
+
+	/**
+	 * Same as applyAbsolute(int, ...), for the dynamic children of a widget (each one is a separate
+	 * piece of the drawing). The parent itself is left alone.
+	 */
+	private void applyAbsoluteToChildren(int id, int percent, boolean opaqueAt100)
+	{
+		Widget parent = client.getWidget(id);
+		Widget[] children = parent == null ? null : parent.getDynamicChildren();
+		if (children == null)
+		{
+			return;
+		}
+
+		for (Widget child : children)
+		{
+			applyAbsolute(child, percent, opaqueAt100);
+		}
+	}
+
+	private void applyAbsolute(Widget w, int percent, boolean opaqueAt100)
+	{
 		if (w == null)
 		{
 			return;
