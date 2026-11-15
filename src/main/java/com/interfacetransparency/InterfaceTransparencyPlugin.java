@@ -359,7 +359,9 @@ public class InterfaceTransparencyPlugin extends Plugin
 	{
 		if (isVisible(client.getWidget(ChatLeft.UNIVERSE))
 			|| isVisible(client.getWidget(ChatRight.UNIVERSE))
-			|| isVisible(client.getWidget(Chatmenu.UNIVERSE)))
+			|| isVisible(client.getWidget(Chatmenu.UNIVERSE))
+			// Message and text-entry prompts, such as the Grand Exchange item search
+			|| isVisible(client.getWidget(Chatbox.MES_TEXT2)))
 		{
 			return true;
 		}
