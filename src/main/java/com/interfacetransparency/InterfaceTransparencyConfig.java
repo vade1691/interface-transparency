@@ -6,6 +6,12 @@ import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
 import net.runelite.client.config.Range;
 
+/**
+ * Settings are laid out the same way in every section:
+ * the grouped toggle, the "All" slider, then the individual sliders in the order
+ * they appear on screen. Config keys must never be renamed (that would reset
+ * users' saved settings), only the display names and descriptions.
+ */
 @ConfigGroup("interfacetransparency")
 public interface InterfaceTransparencyConfig extends Config
 {
@@ -15,7 +21,7 @@ public interface InterfaceTransparencyConfig extends Config
 
 	@ConfigSection(
 		name = "Resizable modern",
-		description = "Transparency of the side panel tabs in the resizable modern layout",
+		description = "Side panel in the resizable modern layout",
 		position = 0
 	)
 	String modernSection = "modernSection";
@@ -23,7 +29,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "modernGrouped",
 		name = "Use one slider for all",
-		description = "On: the 'All' slider controls everything in this layout. Off: the individual sliders below are used instead.",
+		description = "On: the 'All' slider controls this whole section. Off: the individual sliders are used.",
 		section = modernSection,
 		position = 0
 	)
@@ -35,8 +41,8 @@ public interface InterfaceTransparencyConfig extends Config
 	@Range(min = 0, max = 100)
 	@ConfigItem(
 		keyName = "modernOpacity",
-		name = "All modern elements (%)",
-		description = "Used when 'Use one slider for all' is on: opacity of everything in this layout (100 = default)",
+		name = "All (%)",
+		description = "Everything in this section. Used when 'Use one slider for all' is on.",
 		section = modernSection,
 		position = 1
 	)
@@ -47,22 +53,9 @@ public interface InterfaceTransparencyConfig extends Config
 
 	@Range(min = 0, max = 100)
 	@ConfigItem(
-		keyName = "modernIcons",
-		name = "Tab icons (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the icon on each tab (100 = default)",
-		section = modernSection,
-		position = 3
-	)
-	default int modernIcons()
-	{
-		return 100;
-	}
-
-	@Range(min = 0, max = 100)
-	@ConfigItem(
 		keyName = "modernBackground",
 		name = "Tab stones (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the stone background behind the tab icons, including the highlighted active tab (100 = default)",
+		description = "The stone behind each tab icon, including the active tab. Used when 'Use one slider for all' is off.",
 		section = modernSection,
 		position = 2
 	)
@@ -73,11 +66,23 @@ public interface InterfaceTransparencyConfig extends Config
 
 	@Range(min = 0, max = 100)
 	@ConfigItem(
+		keyName = "modernIcons",
+		name = "Tab icons (%)",
+		description = "The icon on each tab. Used when 'Use one slider for all' is off.",
+		section = modernSection,
+		position = 3
+	)
+	default int modernIcons()
+	{
+		return 100;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
 		keyName = "modernPanelBackground",
 		name = "Panel background (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the side panel background. "
-			+ "0 = fully transparent, 100 = the game's own appearance. Works whether or not the game's "
-			+ "'Transparent side panel' setting is on.",
+		description = "The background of the side panel. Used when 'Use one slider for all' is off. "
+			+ "0 = transparent, 100 = the game's look, whether or not 'Transparent side panel' is on.",
 		section = modernSection,
 		position = 4
 	)
@@ -89,8 +94,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "modernKeepPanelOpaque",
 		name = "Keep panel background opaque",
-		description = "At 100%, keep the side panel background fully opaque even when the game's "
-			+ "'Transparent side panel' setting is on. Lower values still fade it. Off = leave it as the game draws it.",
+		description = "At 100%, keeps the panel background solid even when the game's 'Transparent side panel' setting is on.",
 		section = modernSection,
 		position = 5
 	)
@@ -103,7 +107,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "modernBorder",
 		name = "Panel border (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the side panel border (100 = default)",
+		description = "The border around the side panel. Used when 'Use one slider for all' is off.",
 		section = modernSection,
 		position = 6
 	)
@@ -118,8 +122,7 @@ public interface InterfaceTransparencyConfig extends Config
 
 	@ConfigSection(
 		name = "Resizable classic",
-		description = "Transparency of the side panel tabs in the resizable classic layout. "
-			+ "Recommended: turn on 'Transparent side panel' in the game's Interfaces settings for the best result.",
+		description = "Side panel in the resizable classic layout",
 		position = 1
 	)
 	String classicSection = "classicSection";
@@ -127,7 +130,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "classicGrouped",
 		name = "Use one slider for all",
-		description = "On: the 'All' slider controls everything in this layout. Off: the individual sliders below are used instead.",
+		description = "On: the 'All' slider controls this whole section. Off: the individual sliders are used.",
 		section = classicSection,
 		position = 0
 	)
@@ -139,8 +142,8 @@ public interface InterfaceTransparencyConfig extends Config
 	@Range(min = 0, max = 100)
 	@ConfigItem(
 		keyName = "classicOpacity",
-		name = "All classic elements (%)",
-		description = "Used when 'Use one slider for all' is on: opacity of the tab stones, icons and panel background (100 = default)",
+		name = "All (%)",
+		description = "Everything in this section. Used when 'Use one slider for all' is on.",
 		section = classicSection,
 		position = 1
 	)
@@ -153,7 +156,8 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "classicStones",
 		name = "Tab stones (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the dark stone behind each tab icon, plus side graphics 3 and 5, which are shared with the icons slider (the more transparent setting wins) (100 = default)",
+		description = "The stone behind each tab icon. Used when 'Use one slider for all' is off. "
+			+ "Shares a few graphics with 'Tab icons'; the more transparent setting wins.",
 		section = classicSection,
 		position = 2
 	)
@@ -166,7 +170,8 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "classicIcons",
 		name = "Tab icons (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the icon on each tab, plus side graphics 3 and 5, which are shared with the stones slider (the more transparent setting wins) (100 = default)",
+		description = "The icon on each tab. Used when 'Use one slider for all' is off. "
+			+ "Shares a few graphics with 'Tab stones'; the more transparent setting wins.",
 		section = classicSection,
 		position = 3
 	)
@@ -179,7 +184,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "classicPillars",
 		name = "Pillars (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the side pillars (100 = default)",
+		description = "The pillars at the sides of the panel. Used when 'Use one slider for all' is off.",
 		section = classicSection,
 		position = 4
 	)
@@ -192,9 +197,8 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "classicBackground",
 		name = "Panel background (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the side panel background. "
-			+ "0 = fully transparent, 100 = the game's own appearance. Works whether or not the game's "
-			+ "'Transparent side panel' setting is on.",
+		description = "The background of the side panel. Used when 'Use one slider for all' is off. "
+			+ "0 = transparent, 100 = the game's look, whether or not 'Transparent side panel' is on.",
 		section = classicSection,
 		position = 5
 	)
@@ -206,8 +210,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "classicKeepPanelOpaque",
 		name = "Keep panel background opaque",
-		description = "At 100%, keep the side panel background fully opaque even when the game's "
-			+ "'Transparent side panel' setting is on. Lower values still fade it. Off = leave it as the game draws it.",
+		description = "At 100%, keeps the panel background solid even when the game's 'Transparent side panel' setting is on.",
 		section = classicSection,
 		position = 6
 	)
@@ -221,45 +224,19 @@ public interface InterfaceTransparencyConfig extends Config
 	// ---------------------------------------------------------------------
 
 	@ConfigSection(
-		name = "Chat tabs",
-		description = "Transparency of the chat tab buttons. "
-			+ "Recommended: turn on 'Transparent chatbox' in the game's Interfaces settings for the best result.",
+		name = "Chat",
+		description = "Chat tabs, chat box and dialogs",
 		position = 2
 	)
 	String chatSection = "chatSection";
-
-	@ConfigItem(
-		keyName = "chatGrouped",
-		name = "Use one slider for all",
-		description = "On: the 'All' slider controls everything in the chat tabs. Off: the individual sliders below are used instead.",
-		section = chatSection,
-		position = 0
-	)
-	default boolean chatGrouped()
-	{
-		return true;
-	}
-
-	@Range(min = 0, max = 100)
-	@ConfigItem(
-		keyName = "chatOpacity",
-		name = "All chat elements (%)",
-		description = "Used when 'Use one slider for all' is on: opacity of the chat tab buttons and their background (100 = default)",
-		section = chatSection,
-		position = 1
-	)
-	default int chatOpacity()
-	{
-		return 100;
-	}
 
 	@Range(min = 0, max = 100)
 	@ConfigItem(
 		keyName = "chatButtons",
 		name = "Tab buttons (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the All, Game, Public, Private, Friends, Clan and Trade buttons and the report button (100 = default)",
+		description = "The All, Game, Public, Private, Friends, Clan and Trade buttons and the report button.",
 		section = chatSection,
-		position = 2
+		position = 0
 	)
 	default int chatButtons()
 	{
@@ -269,10 +246,11 @@ public interface InterfaceTransparencyConfig extends Config
 	@Range(min = 0, max = 100)
 	@ConfigItem(
 		keyName = "chatBackground",
-		name = "Buttons background (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the background behind the chat tab buttons (100 = default)",
+		name = "Tab background (%)",
+		description = "The strip behind the chat tab buttons. "
+			+ "0 = transparent, 100 = the game's look, whether or not 'Transparent chatbox' is on.",
 		section = chatSection,
-		position = 3
+		position = 1
 	)
 	default int chatBackground()
 	{
@@ -282,10 +260,9 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "chatKeepBackgroundOpaque",
 		name = "Keep tab background opaque",
-		description = "At 100%, keep the background behind the chat tab buttons fully opaque even when the game's "
-			+ "'Transparent chatbox' setting is on. Lower values still fade it. Off = leave it as the game draws it.",
+		description = "At 100%, keeps the tab background solid even when the game's 'Transparent chatbox' setting is on.",
 		section = chatSection,
-		position = 4
+		position = 2
 	)
 	default boolean chatKeepBackgroundOpaque()
 	{
@@ -296,11 +273,10 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "chatBoxBackground",
 		name = "Chat box background (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the background behind the chat messages. "
-			+ "0 = fully transparent, 100 = the game's own appearance. Works whether or not the game's "
-			+ "'Transparent chatbox' setting is on.",
+		description = "The background behind the chat messages. "
+			+ "0 = transparent, 100 = the game's look, whether or not 'Transparent chatbox' is on.",
 		section = chatSection,
-		position = 5
+		position = 3
 	)
 	default int chatBoxBackground()
 	{
@@ -310,14 +286,40 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "chatKeepBoxOpaque",
 		name = "Keep chat box background opaque",
-		description = "At 100%, keep the background behind the chat messages fully opaque even when the game's "
-			+ "'Transparent chatbox' setting is on. Lower values still fade it. Off = leave it as the game draws it.",
+		description = "At 100%, keeps the chat box background solid even when the game's 'Transparent chatbox' setting is on.",
 		section = chatSection,
-		position = 6
+		position = 4
 	)
 	default boolean chatKeepBoxOpaque()
 	{
 		return false;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
+		keyName = "chatBorder",
+		name = "Chat box border (%)",
+		description = "The border around the chat box and the NPC, player and option dialogs, shown when 'Transparent chatbox' is off.",
+		section = chatSection,
+		position = 5
+	)
+	default int chatBorder()
+	{
+		return 100;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
+		keyName = "chatDialogBackground",
+		name = "Dialog background (%)",
+		description = "The background behind NPC and player dialogs and the option list. "
+			+ "0 = transparent, 100 = the game's look.",
+		section = chatSection,
+		position = 6
+	)
+	default int chatDialogBackground()
+	{
+		return 100;
 	}
 
 	// ---------------------------------------------------------------------
@@ -326,7 +328,7 @@ public interface InterfaceTransparencyConfig extends Config
 
 	@ConfigSection(
 		name = "Minimap",
-		description = "Transparency of the minimap orbs and the minimap surround",
+		description = "Minimap orbs and surround",
 		position = 3
 	)
 	String minimapSection = "minimapSection";
@@ -334,7 +336,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "minimapGrouped",
 		name = "Use one slider for all",
-		description = "On: the 'All' slider controls everything in the minimap section. Off: the individual sliders below are used instead.",
+		description = "On: the 'All' slider controls this whole section. Off: the individual sliders are used.",
 		section = minimapSection,
 		position = 0
 	)
@@ -346,8 +348,8 @@ public interface InterfaceTransparencyConfig extends Config
 	@Range(min = 0, max = 100)
 	@ConfigItem(
 		keyName = "minimapOpacity",
-		name = "All minimap elements (%)",
-		description = "Used when 'Use one slider for all' is on: opacity of the orbs and the minimap surround (100 = default)",
+		name = "All (%)",
+		description = "Everything in this section. Used when 'Use one slider for all' is on.",
 		section = minimapSection,
 		position = 1
 	)
@@ -360,7 +362,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "minimapOrbs",
 		name = "Orbs (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the orbs themselves: icons, fills and indicators (100 = default)",
+		description = "The orbs: icons, fills and indicators. Used when 'Use one slider for all' is off.",
 		section = minimapSection,
 		position = 2
 	)
@@ -372,8 +374,8 @@ public interface InterfaceTransparencyConfig extends Config
 	@Range(min = 0, max = 100)
 	@ConfigItem(
 		keyName = "minimapOrbBoxes",
-		name = "Orb boxes (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the dark boxes behind the orbs and the dark disc each orb sits on (100 = default)",
+		name = "Orb backgrounds (%)",
+		description = "The dark boxes and discs behind the orbs. Used when 'Use one slider for all' is off.",
 		section = minimapSection,
 		position = 3
 	)
@@ -386,7 +388,7 @@ public interface InterfaceTransparencyConfig extends Config
 	@ConfigItem(
 		keyName = "minimapSurround",
 		name = "Surround (%)",
-		description = "Used when 'Use one slider for all' is off: opacity of the minimap surround (100 = default)",
+		description = "The frame around the minimap. Used when 'Use one slider for all' is off.",
 		section = minimapSection,
 		position = 4
 	)

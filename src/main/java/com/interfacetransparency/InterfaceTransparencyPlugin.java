@@ -12,7 +12,10 @@ import net.runelite.api.events.BeforeRender;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.gameval.InterfaceID.ChatLeft;
 import net.runelite.api.gameval.InterfaceID.Chatbox;
+import net.runelite.api.gameval.InterfaceID.Chatmenu;
+import net.runelite.api.gameval.InterfaceID.ChatRight;
 import net.runelite.api.gameval.InterfaceID.Orbs;
 import net.runelite.api.gameval.InterfaceID.ToplevelOsrsStretch;
 import net.runelite.api.gameval.InterfaceID.ToplevelPreEoc;
@@ -184,9 +187,9 @@ public class InterfaceTransparencyPlugin extends Plugin
 	// When you release something players should hear about, bump VERSION and edit WHATS_NEW.
 	private static final String CONFIG_GROUP = "interfacetransparency";
 	private static final String VERSION_KEY = "lastSeenVersion";
-	private static final String VERSION = "2";
+	private static final String VERSION = "3";
 	private static final String WHATS_NEW =
-		"Interface Transparency: new minimap orb and surround transparency. Open the plugin settings to try it.";
+		"Interface Transparency: new chat box, dialog and side panel background sliders, and the chat settings are simpler. Open the plugin settings to try them.";
 
 	@Inject
 	private Client client;
@@ -213,8 +216,36 @@ public class InterfaceTransparencyPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		migrateChatSettings();
+
 		// If the plugin is switched on while already logged in, greet straight away
 		updateMessagePending = client.getGameState() == GameState.LOGGED_IN && needsUpdateMessage();
+	}
+
+	/**
+	 * The chat section used to have a "Use one slider for all" toggle and an "All" slider. Both were removed.
+	 * Anyone who was using the shared slider gets its value copied to the individual sliders, so their chat
+	 * looks the same as before.
+	 */
+	private void migrateChatSettings()
+	{
+		String all = configManager.getConfiguration(CONFIG_GROUP, "chatOpacity");
+		if (all == null)
+		{
+			return;
+		}
+
+		String grouped = configManager.getConfiguration(CONFIG_GROUP, "chatGrouped");
+		if (!"false".equals(grouped))
+		{
+			for (String key : new String[]{"chatButtons", "chatBackground", "chatBoxBackground", "chatBorder"})
+			{
+				configManager.setConfiguration(CONFIG_GROUP, key, all);
+			}
+		}
+
+		configManager.unsetConfiguration(CONFIG_GROUP, "chatOpacity");
+		configManager.unsetConfiguration(CONFIG_GROUP, "chatGrouped");
 	}
 
 	@Override
@@ -320,16 +351,54 @@ public class InterfaceTransparencyPlugin extends Plugin
 			config.classicKeepPanelOpaque());
 	}
 
+	/**
+	 * True while a dialog or other popup is showing in the chat box: the NPC dialog, the player dialog,
+	 * the option list, or anything else loaded into the chat modal area (message boxes and so on).
+	 */
+	private boolean isChatPopupOpen()
+	{
+		if (isVisible(client.getWidget(ChatLeft.UNIVERSE))
+			|| isVisible(client.getWidget(ChatRight.UNIVERSE))
+			|| isVisible(client.getWidget(Chatmenu.UNIVERSE)))
+		{
+			return true;
+		}
+
+		Widget modal = client.getWidget(Chatbox.CHATMODAL);
+		if (modal == null || modal.isHidden())
+		{
+			return false;
+		}
+
+		Widget[] nested = modal.getNestedChildren();
+		return nested != null && nested.length > 0;
+	}
+
+	private static boolean isVisible(Widget w)
+	{
+		return w != null && !w.isHidden();
+	}
+
 	private void applyChat()
 	{
-		boolean chat = config.chatGrouped();
-		apply(CHAT_BUTTONS, chat ? config.chatOpacity() : config.chatButtons(), true);
-		apply(CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBackground(), true);
-		applyAbsolute(Chatbox.CONTROLS_BACKGROUND_GRAPHIC, chat ? config.chatOpacity() : config.chatBackground(),
+		apply(CHAT_BUTTONS, config.chatButtons(), true);
+		apply(CHAT_BACKGROUND, config.chatBackground(), true);
+		applyAbsolute(Chatbox.CONTROLS_BACKGROUND_GRAPHIC, config.chatBackground(),
 			config.chatKeepBackgroundOpaque());
-		// The chat box area (162.37), which is made of dynamic children
-		applyAbsoluteToChildren(Chatbox.CHAT_BACKGROUND, chat ? config.chatOpacity() : config.chatBoxBackground(),
-			config.chatKeepBoxOpaque());
+		// The border around the chat box and dialogs (162.34), also made of dynamic children
+		applyAbsoluteToChildren(Chatbox.CHATAREA, config.chatBorder(), false);
+
+		// The chat box area (162.37), which is made of dynamic children. The same widgets draw the
+		// parchment behind dialogs and popups, so while one is open they follow the dialog slider instead.
+		if (isChatPopupOpen())
+		{
+			applyAbsoluteToChildren(Chatbox.CHAT_BACKGROUND, config.chatDialogBackground(), false);
+		}
+		else
+		{
+			applyAbsoluteToChildren(Chatbox.CHAT_BACKGROUND, config.chatBoxBackground(),
+				config.chatKeepBoxOpaque());
+		}
 	}
 
 	/**
