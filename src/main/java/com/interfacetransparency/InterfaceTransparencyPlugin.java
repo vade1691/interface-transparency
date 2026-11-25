@@ -17,6 +17,7 @@ import net.runelite.api.gameval.InterfaceID.Chatbox;
 import net.runelite.api.gameval.InterfaceID.Chatmenu;
 import net.runelite.api.gameval.InterfaceID.ChatRight;
 import net.runelite.api.gameval.InterfaceID.Orbs;
+import net.runelite.api.gameval.InterfaceID.OrbsNomap;
 import net.runelite.api.gameval.InterfaceID.ToplevelOsrsStretch;
 import net.runelite.api.gameval.InterfaceID.ToplevelPreEoc;
 import net.runelite.api.widgets.Widget;
@@ -121,7 +122,18 @@ public class InterfaceTransparencyPlugin extends Plugin
 		Orbs.ORB_WORLDMAP,
 		Orbs.WIKI,
 		Orbs.ORB_CONTENTRECOM,
-		Orbs.XP_DROPS
+		Orbs.XP_DROPS,
+
+		// The same orbs when the minimap is hidden (OrbsNomap, group 895)
+		OrbsNomap.ORB_HEALTH,
+		OrbsNomap.ORB_PRAYER,
+		OrbsNomap.ORB_RUNENERGY,
+		OrbsNomap.ORB_SPECENERGY,
+		OrbsNomap.ORB_STORE,
+		OrbsNomap.ORB_WORLDMAP,
+		OrbsNomap.WIKI,
+		OrbsNomap.ORB_CONTENTRECOM,
+		OrbsNomap.XP_DROPS
 	};
 
 	// The boxes behind the orbs, including the dark "empty" disc each orb sits on.
@@ -141,7 +153,23 @@ public class InterfaceTransparencyPlugin extends Plugin
 		Orbs.ORB_RUNENERGY_EMPTY,
 		Orbs.ORB_RUNENERGY_EMPTY_GRAPHIC0,
 		Orbs.ORB_SPECENERGY_EMPTY,
-		Orbs.ORB_SPECENERGY_EMPTY_GRAPHIC0
+		Orbs.ORB_SPECENERGY_EMPTY_GRAPHIC0,
+
+		// The same boxes and discs when the minimap is hidden
+		OrbsNomap.HEALTH_BACKING,
+		OrbsNomap.PRAYER_BACKING,
+		OrbsNomap.RUNENERGY_BACKING,
+		OrbsNomap.SPECENERGY_BACKING,
+		OrbsNomap.WORLDMAP_BACKING,
+
+		OrbsNomap.ORB_HEALTH_EMPTY,
+		OrbsNomap.HEALTH_EMPTY_CONTENTS,
+		OrbsNomap.ORB_PRAYER_EMPTY,
+		OrbsNomap.ORB_PRAYER_EMPTY_GRAPHIC0,
+		OrbsNomap.ORB_RUNENERGY_EMPTY,
+		OrbsNomap.ORB_RUNENERGY_EMPTY_GRAPHIC0,
+		OrbsNomap.ORB_SPECENERGY_EMPTY,
+		OrbsNomap.ORB_SPECENERGY_EMPTY_GRAPHIC0
 	);
 
 	// The rest of each orb is several widgets stacked on top of each other, and each one is faded. Overlapping
@@ -313,6 +341,9 @@ public class InterfaceTransparencyPlugin extends Plugin
 		int surround = minimap ? config.minimapOpacity() : config.minimapSurround();
 		apply(MINIMAP_SURROUND, surround, false);
 		apply(MINIMAP_SURROUND_CLASSIC, surround, false);
+		// 164.22[0], a dynamic child of the minimap area: the surround around the compass
+		// (seen when the compass is moved, for example by a compact orbs plugin)
+		applyDynamicChildren(ToplevelPreEoc.MAP_MINIMAP, surround);
 	}
 
 	/**
